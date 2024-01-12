@@ -1,23 +1,21 @@
 const express = require('express');
-const { MongoClient } = require('mongodb');
-const app = express()
-app.use(express.json())
+const app = express();
+const port = 3000;
+const url = 'mongodb://localhost:27017/pratos'; // Database URL
+const db = require('mongoose');
 
-const url = "mongodb://localhost:27017"
-const dbName = "bobac"
-const collectionName = "menu_do_dia"
-
-function dbConnection() {
-    return new Promise((resolve, reject) => {
-        MongoClient.connect(url).then((client) => {
-            const db = client.db(dbName);
-            const collection = db.collection(collectionName);
-            resolve(collection);
-        }).catch((err) => {
-            reject("Connection error: " + err);
-        });
-    });
+const connect = () => {
+    db.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('Conexão estabelecida com a base de dados do Antony!'))
+    .catch(err => console.log('[DB Antony]',err));
 }
 
-require('./Controllers/prato_do_dia')(app, dbConnection)
-app.listen(3000, () => console.log('Servidor à escuta na porta 3000...'));
+connect();
+
+app.use(express.json());
+
+require('./Utils/Middlewares')
+
+app.use('/pratos', require('./Routes/index'))
+
+app.listen(port, () => console.log(`Servidor arrancado na porta ${port}`));
